@@ -1,26 +1,87 @@
-import React from "react";
+import React,{Component} from "react";
 import "./App.scss";
-
+import axios from "axios";
 import Login from "./component/LoginRegistretion";
-// import Rooms from "./Pages/Rooms";
-// import SingleRoom from "./Pages/SingleRoom";
-// import Error from "./Pages/Error";
-// import Navbar from "./Components/Navbar";
+import Home from "./pages/Home";
 
-import { Route, Switch } from "react-router-dom";
+import { BrowserRouter,Route, Switch } from "react-router-dom";
 
-function App() {
-  return (
-      <React.Fragment>
-        {/*<Navbar />*/}
-        <Switch>
-          <Route exact path="/" component={Login} />
-          {/*<Route exact path="/rooms/" component={Rooms} />*/}
-          {/*<Route exact path="/rooms/:single" component={SingleRoom} />*/}
-          {/*<Route component={Error} />*/}
-        </Switch>
-      </React.Fragment>
-  );
+export default  class App extends Component {
+    constructor() {
+        super();
+
+        this.state = {
+            loggedInStatus: 'Not_LOGGED_IN',
+            user: {}
+        }
+    }
+
+    checkLoginStatus() {
+        axios
+            .get("http://104.248.0.49/api/v1/users/login", { withCredentials: true })
+            .then(response => {
+                if (
+                    response.data.login &&
+                    this.state.loggedInStatus === "NOT_LOGGED_IN"
+                ) {
+                    this.setState({
+                        loggedInStatus: "LOGGED_IN",
+                        user: response.data.user
+                    });
+                } else if (
+                    !response.data.login &
+                    (this.state.loggedInStatus === "LOGGED_IN")
+                ) {
+                    this.setState({
+                        loggedInStatus: "NOT_LOGGED_IN",
+                        user: {}
+                    });
+                }
+            })
+            .catch(error => {
+                console.log("check login error", error);
+            });
+    }
+    componentDidMount() {
+        this.checkLoginStatus();
+    }
+
+    handleLogout() {
+        this.setState({
+            loggedInStatus: "NOT_LOGGED_IN",
+            user: {}
+        });
+    }
+
+    handleLogin(data) {
+        this.setState({
+            loggedInStatus: "LOGGED_IN",
+            user: data.user
+        });
+    }
+    render() {
+        return (
+            <React.Fragment>
+                {/*<Navbar />*/}
+                <BrowserRouter>
+                <Switch>
+                    <Route exact path="/" component={Login}/>
+                    <Route
+                        exact
+                        path={"/"}
+                        render={props => (
+                            <Home
+                                {...props}
+                                handleLogin={this.handleLogin}
+                                handleLogout={this.handleLogout}
+                                loggedInStatus={this.state.loggedInStatus}
+                            />
+                        )}
+                    />
+                </Switch>
+                </BrowserRouter>
+            </React.Fragment>
+        );
+    }
 }
 
-export default App;

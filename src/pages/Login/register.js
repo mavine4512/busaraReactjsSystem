@@ -1,10 +1,14 @@
 import React from "react";
+import axios from "axios";
 
 export class Register extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            input: {},
+            username:"",
+            email: "",
+            password: "",
+            password_confirmation: "",
             errors: {}
         };
         this.handleChange = this.handleChange.bind(this);
@@ -12,66 +16,38 @@ export class Register extends React.Component {
     }
 
     handleChange(event) {
-        let input = this.state.input;
-        input[event.target.name] = event.target.value;
-
         this.setState({
-            input
+            [event.target.name]: event.target.value
         });
     }
-
     handleSubmit(event) {
+        const { username,email, password, password_confirmation } = this.state;
+
+            axios
+                .post(
+                    "http://104.248.0.49/api/v1/users/registration/",
+                    {
+                        user: {
+                            username:username,
+                            email: email,
+                            password: password,
+                            password_confirmation: password_confirmation
+                        }
+                    },
+                    { withCredentials: true }
+                )
+                .then(response => {
+                    if (response.data.status === "created") {
+                        this.props.handleSuccessfulAuth(response.data);
+                    }
+                })
+                .catch(error => {
+                    console.log("registration error", error);
+                });
+
         event.preventDefault();
-
-        if(this.validate()){
-            console.log(this.state);
-
-            let input = {};
-            input["username"] = "";
-            input["email"] = "";
-            input["password"] = "";
-            this.setState({input:input});
-
-            alert('Form submited successfully',);
-        }
     }
 
-
-    validate(){
-        let input = this.state.input;
-        let errors = {};
-        let isValid = true;
-
-        if (!input["username"]) {
-            isValid = false;
-            errors["username"] = "Please enter your username.";
-        }
-
-        if (!input["email"]) {
-            isValid = false;
-            errors["email"] = "Please enter your email Address.";
-        }
-
-        if (typeof input["email"] !== "undefined") {
-
-            let pattern = new RegExp(/^(("[\w-\s]+")|([\w-]+(?:\.[\w-]+)*)|("[\w-\s]+")([\w-]+(?:\.[\w-]+)*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$)|(@\[?((25[0-5]\.|2[0-4][0-9]\.|1[0-9]{2}\.|[0-9]{1,2}\.))((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){2}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\]?$)/i);
-            if (!pattern.test(input["email"])) {
-                isValid = false;
-                errors["email"] = "Please enter valid email address.";
-            }
-        }
-
-        if (!input["password"]) {
-            isValid = false;
-            errors["password"] = "Please enter your password.";
-        }
-
-        this.setState({
-            errors: errors
-        });
-
-        return isValid;
-    }
 
     render() {
         return (
@@ -83,29 +59,36 @@ export class Register extends React.Component {
                         <div className="form-group">
                             <label htmlFor="username">User Name</label>
                             <input type="text" name="username" placeholder="Enter username"
-                                   value={this.state.input.name}
+                                   value={this.state.username.name}
                                    onChange={this.handleChange}
+                                   required
                             />
                             <div className="textDanger">{this.state.errors.username}</div>
                         </div>
                         <div className="form-group">
                             <label htmlFor="email">Email</label>
                             <input type="text" name="email" placeholder="Enter email"
+                                   value={this.state.email}
                                    onChange={this.handleChange}
+                                   required
                             />
                             <div className="textDanger">{this.state.errors.email}</div>
                         </div>
                         <div className="form-group">
                             <label htmlFor="password">Password</label>
-                            <input type="text" name="password" placeholder="Enter password"
+                            <input type="password" name="password" placeholder="Enter password"
+                                   value={this.state.password}
                                    onChange={this.handleChange}
+                                   required
                             />
                             <div className="textDanger">{this.state.errors.password}</div>
                         </div>
                         <div className="form-group">
                             <label htmlFor="confirmpassword">Confirm password</label>
-                            <input type="text" name="password" placeholder="Confirm password"
+                            <input type="password" name="password_confirmation" placeholder="Confirm password"
+                                   value={this.state.password_confirmation}
                                    onChange={this.handleChange}
+                                   required
                             />
                             <div className="textDanger">{this.state.errors.password}</div>
                         </div>
