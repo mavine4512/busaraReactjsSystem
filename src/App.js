@@ -1,5 +1,4 @@
 import React,{Component} from "react";
-import "./App.scss";
 import axios from "axios";
 // import Login from "./component/LoginRegistretion";
 import Home from "./pages/Home";
